@@ -1,0 +1,27 @@
+<html>
+  <body>
+    <div><a href="../index.html">Back</a></div>
+    <canvas
+      class="glslCanvas"
+      data-fragment="precision mediump float;
+
+      uniform vec2 u_resolution;
+      uniform vec2 u_mouse;
+      uniform float u_time;
+
+      void main() {
+        vec2 st = gl_FragCoord.xy/u_mouse;
+        gl_FragColor = vec4(st.x, st.y, 0.0, 1.0);
+      }"
+      width="600"
+      height="600"
+    ></canvas>
+    <br />
+    <i>Demo is above this text</i>
+    <script
+      type="text/javascript"
+      src="https://rawgit.com/patriciogonzalezvivo/glslCanvas/master/dist/GlslCanvas.js"
+    ></script>
+    <script src="app.js"></script>
+  </body>
+</html>
