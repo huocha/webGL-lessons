@@ -1,0 +1,9 @@
+canvas {
+  border: 1px solid;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+#CANVAS_TEMP {
+  border: 1px solid red;
+}
