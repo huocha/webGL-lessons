@@ -7,3 +7,8 @@ canvas {
 #CANVAS_TEMP {
   border: 1px solid red;
 }
+
+#multiple-btn {
+  position: relative;
+  top: 600px;
+}
