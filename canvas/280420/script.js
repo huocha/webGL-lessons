@@ -71,7 +71,7 @@ function drawMultiCircles(x, y, context) {
   const angle = 180 / nb;
 
   for (let i = 0; i < nb; i++) {
-    if ((i = 0)) {
+    if (i === 0) {
       context.beginPath();
       context.arc(x, y, Math.abs(200 - x), 0, Math.PI * 2);
       context.stroke();
