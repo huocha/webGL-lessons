@@ -2,7 +2,11 @@ let canvas = CANVAS;
 let canvasTemp = CANVAS_TEMP;
 let ctx = canvas.getContext("2d");
 let ctxTemp = canvasTemp.getContext("2d");
-let multipleBtn = document.getElementById("multiple-btn");
+const multipleBtn = document.getElementById("multiple-btn");
+const resetBtn = document.getElementById("reset-btn");
+const xCoord = document.getElementById("x");
+const yCoord = document.getElementById("y");
+
 let nb = 0;
 
 function initCircle() {
@@ -22,6 +26,9 @@ initCircle();
 
 canvasTemp.addEventListener("mousemove", (e) => {
   ctxTemp.clearRect(0, 0, canvasTemp.width, canvasTemp.height);
+  xCoord.innerText = e.offsetX;
+  yCoord.innerText = e.offsetY;
+
   if (!nb) {
     drawCircle(e.offsetX, e.offsetY, ctxTemp);
   } else {
@@ -37,6 +44,12 @@ canvasTemp.addEventListener("mousedown", (e) => {
 multipleBtn.addEventListener("click", (e) => {
   nb += 1;
   console.log("multiple click", nb);
+});
+
+resetBtn.addEventListener("click", (e) => {
+  canvas.width = canvas.width;
+  canvasTemp.width = canvasTemp.width;
+  initCircle();
 });
 
 function drawCircle(x, y, context) {

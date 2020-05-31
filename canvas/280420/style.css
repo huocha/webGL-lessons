@@ -8,7 +8,12 @@ canvas {
   border: 1px solid red;
 }
 
-#multiple-btn {
+.btn {
   position: relative;
   top: 600px;
+}
+
+.debugger {
+  position: relative;
+  top: 450px;
 }
