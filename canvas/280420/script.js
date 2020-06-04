@@ -8,18 +8,18 @@ const xCoord = document.getElementById("x");
 const yCoord = document.getElementById("y");
 const dist = document.getElementById("dist");
 
-let nb = 3;
+let nb = 0;
 
 function initCircle() {
   // draw the circle
   ctx.moveTo(450, 250);
   ctx.arc(250, 250, 200, 0, Math.PI * 2);
-  //ctx.clip();
+  ctx.clip();
   ctx.stroke();
 
   ctxTemp.moveTo(450, 250);
   ctxTemp.arc(250, 250, 200, 0, Math.PI * 2);
-  //ctxTemp.clip();
+  ctxTemp.clip();
   ctxTemp.stroke();
 }
 
@@ -68,44 +68,16 @@ function drawCircle(x, y, context) {
 }
 
 function drawMultiCircles(x, y, context) {
-  const angle = 180 / nb;
+  const angle = 360 / nb;
 
   for (let i = 0; i < nb; i++) {
-    if (i === 0) {
-      context.beginPath();
-      context.arc(x, y, Math.abs(200 - x), 0, Math.PI * 2);
-      context.stroke();
-    } else {
-      const length = calculateDistance(x, y, 0, 0);
-      const [x1, y1] = temp1(x, y, angle * i, length);
-      context.beginPath();
-      context.arc(x1, y1, Math.abs(200 - x), 0, Math.PI * 2);
-      context.strokeStyle = "#FF0000";
-      context.stroke();
-    }
+    const length = 100; //calculateDistance(x, y, 0, 0);
+    const [x1, y1] = temp1(x, y, angle * i, length);
+    context.beginPath();
+    context.arc(x1, y1, Math.abs(200 - x), 0, Math.PI * 2);
+    context.strokeStyle = "#FF0000";
+    context.stroke();
   }
-  // context.beginPath();
-  // context.arc(x, y, Math.abs(200 - x), 0, Math.PI * 2);
-  // context.stroke();
-
-  // const length = calculateDistance(x, y, 0, 0);
-  // const [x2, y2] = temp1(x, y, 120, length);
-  // context.save();
-
-  // context.beginPath();
-  // context.arc(x2, y2, Math.abs(200 - x), 0, Math.PI * 2);
-  // context.strokeStyle = "#FF0000";
-  // context.stroke();
-
-  // const [x3, y3] = temp1(x, y, 60, length);
-  // context.restore();
-  // context.save();
-
-  // context.beginPath();
-  // context.arc(x3, y3, Math.abs(200 - x), 0, Math.PI * 2);
-  // context.strokeStyle = "#FF00FF";
-  // context.stroke();
-  // context.restore();
 }
 
 function calculateDistance(x1, y1, x2, y2) {
