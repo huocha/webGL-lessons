@@ -7,10 +7,12 @@ const resetBtn = document.getElementById("reset-btn");
 const xCoord = document.getElementById("x");
 const yCoord = document.getElementById("y");
 const dist = document.getElementById("dist");
+const nbCircle = document.getElementById("nb");
 
 let nb = 0;
 
 function initCircle() {
+  nbCircle.innerText = nb;
   // draw the circle
   ctx.moveTo(450, 250);
   ctx.arc(250, 250, 200, 0, Math.PI * 2);
@@ -53,6 +55,7 @@ canvasTemp.addEventListener("mousedown", (e) => {
 multipleBtn.addEventListener("click", (e) => {
   nb += 1;
   console.log("multiple click", nb);
+  nbCircle.innerText = nb;
 });
 
 resetBtn.addEventListener("click", (e) => {
