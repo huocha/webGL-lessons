@@ -1,106 +1,87 @@
-let canvas = CANVAS;
-let canvasTemp = CANVAS_TEMP;
-let ctx = canvas.getContext("2d");
-let ctxTemp = canvasTemp.getContext("2d");
-const multipleBtn = document.getElementById("multiple-btn");
-const resetBtn = document.getElementById("reset-btn");
-const xCoord = document.getElementById("x");
-const yCoord = document.getElementById("y");
-const dist = document.getElementById("dist");
-const nbCircle = document.getElementById("nb");
+const TAU = Math.PI * 2;
+const cos = Math.cos;
+const sin = Math.sin;
 
-let nb = 0;
+const canvas = CANVAS;
+const context = canvas.getContext("2d");
+let mandala = [
+  {
+    repetition: 1,
+    distance: 0,
+    size: 240,
+  },
+  {
+    repetition: 3,
+    distance: 0,
+    size: 0,
+  },
+];
 
-function initCircle() {
-  nbCircle.innerText = nb;
-  // draw the circle
-  ctx.moveTo(450, 250);
-  ctx.arc(250, 250, 200, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.stroke();
+function drawMandala(mandala, index, startAngle, endAngle) {
+  let circle = mandala[index];
+  const { repetition, distance, size } = circle;
 
-  ctxTemp.moveTo(450, 250);
-  ctxTemp.arc(250, 250, 200, 0, Math.PI * 2);
-  ctxTemp.clip();
-  ctxTemp.stroke();
-}
-
-initCircle();
-
-canvasTemp.addEventListener("mousemove", (e) => {
-  const { offsetX, offsetY } = e;
-  ctxTemp.clearRect(0, 0, canvasTemp.width, canvasTemp.height);
-  xCoord.innerText = offsetX;
-  yCoord.innerText = offsetY;
-  dist.innerText = calculateDistance(offsetX, offsetX, 250, 250);
-
-  if (!nb) {
-    drawCircle(offsetX, offsetY, ctxTemp);
-  } else {
-    console.log("draw " + nb);
-    drawMultiCircles(offsetX, offsetY, ctxTemp);
-  }
-});
-
-canvasTemp.addEventListener("mousedown", (e) => {
-  const { offsetX, offsetY } = e;
-  if (!nb) {
-    drawCircle(offsetX, offsetY, ctx);
-  } else {
-    console.log("draw " + nb);
-    drawMultiCircles(offsetX, offsetY, ctx);
-  }
-});
-
-multipleBtn.addEventListener("click", (e) => {
-  nb += 1;
-  console.log("multiple click", nb);
-  nbCircle.innerText = nb;
-});
-
-resetBtn.addEventListener("click", (e) => {
-  canvas.width = canvas.width;
-  canvasTemp.width = canvasTemp.width;
-  initCircle();
-});
-
-function drawCircle(x, y, context) {
-  context.beginPath();
-  context.arc(x + 100, y + 100, Math.abs(200 - x), 0, Math.PI * 2);
-  context.stroke();
-}
-
-function drawMultiCircles(x, y, context) {
-  const angle = 360 / nb;
-
-  for (let i = 0; i < nb; i++) {
-    const length = 100; //calculateDistance(x, y, 0, 0);
-    const [x1, y1] = temp1(x, y, angle * i, length);
+  for (let i = 0; i < repetition; ++i) {
+    const angle = startAngle + (i * (endAngle - startAngle)) / repetition;
     context.beginPath();
-    context.arc(x1, y1, Math.abs(200 - x), 0, Math.PI * 2);
-    context.strokeStyle = "#FF0000";
+    context.arc(
+      250 + cos(angle) * distance,
+      250 + sin(angle) * distance,
+      size,
+      0,
+      TAU
+    );
     context.stroke();
+
+    if (mandala[index + 1]) {
+      context.save();
+      context.clip();
+      drawMandala(
+        mandala,
+        index + 1,
+        startAngle + ((i - 0.5) * TAU) / repetition,
+        startAngle + ((i + 0.5) * TAU) / repetition
+      );
+      context.restore();
+    }
   }
 }
 
-function calculateDistance(x1, y1, x2, y2) {
-  // const a = Math.abs(x1 - x2);
-  // const b = Math.abs(y1 - y2);
-  // const c = Math.sqrt(a*a+b*b);
-  // return c;
+function setup() {
+  canvas.onmousemove = (e) => {
+    const { offsetX, offsetY } = e;
+    mandala[mandala.length - 1].distance = 250 - offsetX;
+    mandala[mandala.length - 1].size = Math.abs(250 - offsetY);
 
-  return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    draw();
+  };
+
+  canvas.onclick = (e) => {
+    mandala.push({
+      repetition: 4,
+      size: 0,
+      distance: 0,
+    });
+    draw();
+  };
+
+  canvas.onmousewheel = (e) => {
+    // deltaY > 1, then increment, otherwise decrement
+
+    if (e.deltaY > 1) {
+      mandala[mandala.length - 1].repetition += 1;
+    } else if (mandala[mandala.length - 1].repetition > 2) {
+      mandala[mandala.length - 1].repetition -= 1;
+    }
+    draw();
+  };
 }
 
-function temp1(xCoord, yCoord, angle, length) {
-  // let x1, y1, x2, y2, x3, y3;
-  // y3 = y1;
-  // x3 = x1 + Math.cos(angle) * length;
-
-  // x2 = xCoord + Math.cos(angle) * length;
-  // y2 = yCoord + Math.sin(angle) * length;
-  // return [x2, y2];
-
-  angle = (angle * Math.PI) / 180;
-  return [length * Math.cos(angle) + xCoord, length * Math.sin(angle) + yCoord];
+function draw() {
+  canvas.width = canvas.width;
+  context.strokeStyle = "black";
+  drawMandala(mandala, 0, 0, TAU);
 }
+
+setup();
+draw();

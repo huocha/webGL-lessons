@@ -4,25 +4,3 @@ canvas {
   top: 0px;
   left: 0px;
 }
-#CANVAS_TEMP {
-  border: 1px solid red;
-}
-
-.btn {
-  position: relative;
-  top: 600px;
-}
-
-.debugger {
-  width: 500px;
-  display: flex;
-  position: relative;
-  top: 450px;
-}
-
-.left {
-  flex: 0.5;
-}
-.right {
-  flex: 0.5;
-}
