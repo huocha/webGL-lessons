@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>WEBGL YAY</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <canvas id="CANVAS" width="500" height="500"></canvas>
+    <script src="script.js"></script>
+
+    <script id="VERTEX_SHADER" type="vertex-shader">
+
+      attribute vec2 position;
+      attribute vec4 color;
+      varying vec4 _color;
+
+      void main() {
+        gl_PointSize = 5.;
+        gl_Position = vec4(position, 0, 2);
+        _color = color;
+      }
+    </script>
+
+    <script id="FRAGMENT_SHADER" type="fragment-shader">
+      precision highp float;
+      uniform vec2 canvas;
+      varying vec4 _color;
+
+      void main() {
+        vec2 xy = gl_FragCoord.xy / canvas;
+        gl_FragColor = vec4(xy,0.,1.) *0.7;
+      }
+    </script>
+  </body>
+</html>
