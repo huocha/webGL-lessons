@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>GAME OF LIFE</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <canvas id="CANVAS" width="500" height="500"></canvas>
+    <script src="script.js"></script>
+
+    <script id="VERTEX_SHADER" type="vertex-shader">
+
+      attribute vec2 coord;
+      void main(void) {
+        gl_Position = vec4(coord, 0.0, 1.0);
+      }
+    </script>
+
+    <script id="FRAGMENT_SHADER_STEPPER" type="fragment-shader">
+      precision mediump float;
+      uniform sampler2D previousState;
+      int wasAlive(vec2 coord) {
+        if (coord.x < 0.0 || 512.0 < coord.x || coord.y < 0.0 || 512.0 < coord.y) return 0;
+        vec4 px = texture2D(previousState, coord/512.0);
+        return px.r < 0.1 ? 1 : 0;
+      }
+      void main(void) {
+        vec2 coord = vec2(gl_FragCoord);
+        int aliveNeighbors =
+          wasAlive(coord+vec2(-1.,-1.)) +
+          wasAlive(coord+vec2(-1.,0.)) +
+          wasAlive(coord+vec2(-1.,1.)) +
+          wasAlive(coord+vec2(0.,-1.)) +
+          wasAlive(coord+vec2(0.,1.)) +
+          wasAlive(coord+vec2(1.,-1.)) +
+          wasAlive(coord+vec2(1.,0.)) +
+          wasAlive(coord+vec2(1.,1.));
+
+        // dead => 3 neighbors => live
+        // live => <2 || >3 neighbors => dead
+
+        bool nowAlive = wasAlive(coord) == 1 ? 2 <= aliveNeighbors && aliveNeighbors <= 3 : 3 == aliveNeighbors;
+
+        // live: vec4(0.,0.,0.,1.)
+        // dead: vec4(1.,1.,1.,1.)
+
+        gl_FragColor = nowAlive ? vec4(0.,0.,0.,1.) : vec4(1.,1.,1.,1.);
+      }
+    </script>
+    <script id="FRAGMENT_SHADER_DISPLAY" type="fragment-shader">
+      precision mediump float;
+      uniform sampler2D state;
+      void main(void) {
+        vec2 coord = vec2(gl_FragCoord)/512.0;
+        gl_FragColor = texture2D(state, coord);
+      }
+    </script>
+  </body>
+</html>
