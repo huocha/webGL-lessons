@@ -7,7 +7,7 @@
     <link href="style.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <canvas id="CANVAS" width="500" height="500"></canvas>
+    <canvas id="CANVAS" width="1000" height="500"></canvas>
     <script src="script.js"></script>
 
     <script id="VERTEX_SHADER" type="vertex-shader">
@@ -20,10 +20,14 @@
 
     <script id="FRAGMENT_SHADER_STEPPER" type="fragment-shader">
       precision mediump float;
+
+      #define SIZE 256.0
+      #define STEPS 100.0
+
       uniform sampler2D previousState;
       int wasAlive(vec2 coord) {
-        if (coord.x < 0.0 || 512.0 < coord.x || coord.y < 0.0 || 512.0 < coord.y) return 0;
-        vec4 px = texture2D(previousState, coord/512.0);
+        if (coord.x < 0.0 || SIZE < coord.x || coord.y < 0.0 || SIZE < coord.y) return 0;
+        vec4 px = texture2D(previousState, coord/SIZE);
         return px.r < 0.1 ? 1 : 0;
       }
       void main(void) {
@@ -46,15 +50,37 @@
         // live: vec4(0.,0.,0.,1.)
         // dead: vec4(1.,1.,1.,1.)
 
-        gl_FragColor = nowAlive ? vec4(0.,0.,0.,1.) : vec4(1.,1.,1.,1.);
+        // Retrieve current cell state
+        vec4 state = texture2D(previousState, coord/SIZE);
+
+        // Update cell state
+        if (nowAlive) {
+          state.r = 0.;
+          state.b = 0.;
+        }
+        else {
+          state.r = 1.;
+          state.b = 1./STEPS + state.b;
+        }
+
+        // Update texture with computed cell state
+        gl_FragColor = state;//nowAlive ? vec4(0.,0.,0.,1.) : vec4(1.,1.,1.,1.);
       }
     </script>
     <script id="FRAGMENT_SHADER_DISPLAY" type="fragment-shader">
       precision mediump float;
       uniform sampler2D state;
+      #define SIZE 256.0
       void main(void) {
         vec2 coord = vec2(gl_FragCoord)/512.0;
-        gl_FragColor = texture2D(state, coord);
+        // retrieve current px in the state
+        vec4 px = texture2D(state, coord);
+
+        float g = (1. - px.b);
+        gl_FragColor.r = 0.5 + (1. - px.b * 2.);
+        gl_FragColor.g =(1. - px.b * 2.);
+        gl_FragColor.b =(1. - px.b * 2.);
+        gl_FragColor.a = 1.;
       }
     </script>
   </body>

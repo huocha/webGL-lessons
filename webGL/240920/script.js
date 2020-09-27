@@ -1,3 +1,5 @@
+const SIZE = 256;
+
 function buildShader(context, shaderType, id) {
   const shader = context.createShader(shaderType);
   context.shaderSource(shader, document.getElementById(id).innerHTML);
@@ -50,6 +52,103 @@ function buildProgram(context, vertexShaderId, fragmentShaderId) {
   }
 
   return program;
+}
+
+function updateTextureGameOfLife(
+  context,
+  textureId,
+  url,
+  top,
+  right,
+  bottom,
+  left,
+  columns,
+  lines,
+  shift
+) {
+  return new Promise((resolve) => {
+    // Create image
+    const image = new Image();
+
+    // Add onload event
+    image.onload = () => {
+      const data = new Array(lines)
+        .fill(0)
+        .map(() => new Array(columns).fill(0).map(() => [255, 255, 255]));
+
+      const canvas = document.createElement("canvas");
+
+      const width = right - left;
+      const height = bottom - top;
+
+      const context2d = canvas.getContext("2d");
+      canvas.width = width;
+      canvas.height = height;
+      context2d.drawImage(image, left, top, width, height, 0, 0, width, height);
+
+      const imageData = context2d.getImageData(0, 0, width, height);
+      const cw = width / columns;
+      const ch = height / lines;
+      const cw2 = ~~(cw / 2);
+      const ch2 = ~~(ch / 2);
+      for (let y = 0; y < lines; ++y) {
+        for (let x = 0; x < columns; ++x) {
+          const index = (x * cw + cw2 + (y * ch * width + ch2 * width)) * 4;
+          const px = imageData.data[index];
+          if (px == 0) {
+            data[y][x] = [0, 0, 0];
+          }
+        }
+      }
+
+      const [matrix, w, h] = ensureMatrixPowOf2(growMatrix(data, shift));
+      const buffer = matrix.flat(2);
+      const texture = updateTextureBuffer(context, textureId, w, h, buffer);
+      resolve(texture);
+    };
+
+    // Change image url
+    image.src = url;
+  });
+}
+
+function growMatrix(matrix, growBy) {
+  const height = matrix.length;
+  const width = matrix[0].length;
+  return [
+    ...new Array(growBy)
+      .fill(0)
+      .map(() =>
+        new Array(width + growBy * 2).fill(0).map(() => [255, 255, 255])
+      ),
+    ...matrix.map((v) => [
+      ...new Array(growBy).fill(0).map(() => [255, 255, 255]),
+      ...v,
+      ...new Array(growBy).fill(0).map(() => [255, 255, 255]),
+    ]),
+    ...new Array(growBy)
+      .fill(0)
+      .map(() =>
+        new Array(width + growBy * 2).fill(0).map(() => [255, 255, 255])
+      ),
+  ];
+}
+function ensureMatrixPowOf2(matrix) {
+  const ch = matrix.length;
+  const cw = matrix[0].length;
+  let th = 2 ** Math.ceil(Math.log2(ch, 2));
+  let tw = 2 ** Math.ceil(Math.log2(cw, 2));
+  tw = th = Math.max(th, tw);
+
+  matrix = matrix.map((l) => [
+    ...l,
+    ...new Array(tw - cw).fill(0).map(() => [255, 255, 255]),
+  ]);
+  for (let i = 0; i < th - ch; ++i) {
+    matrix.push(new Array(tw).fill(0).map(() => [255, 255, 255]));
+  }
+
+  return [matrix, tw, th];
 }
 
 function updateTextureBuffer(
@@ -160,16 +259,19 @@ async function main() {
     context.STATIC_DRAW
   );
 
-  const startState = new Uint8Array(512 * 512 * 3);
-  for (let i = 0; i < 512 * 512; i++) {
+  const startState = new Uint8Array(SIZE * SIZE * 3);
+  for (let i = 0; i < SIZE * SIZE; i++) {
     const intensity = Math.random() < 0.5 ? 255 : 0;
     startState[i * 3] = intensity;
-    startState[i * 3 + 1] = intensity;
-    startState[i * 3 + 2] = intensity;
+    startState[i * 3 + 1] = 0;
+    startState[i * 3 + 2] = 0;
   }
 
-  const texture0 = updateTextureBuffer(context, 0, 512, 512, startState);
-  const texture1 = updateTextureBuffer(context, 1, 512, 512, startState);
+  const texture0 = updateTextureBuffer(context, 0, SIZE, SIZE, startState);
+  const texture1 = updateTextureBuffer(context, 1, SIZE, SIZE, startState);
+  // function updateTextureGameOfLife(context, textureId, url, top, right, bottom, left, columns, lines, shift)
+  //const texture0 = await updateTextureGameOfLife(context, 0, './gol2.jpg', 0, 410,410,0, 36, 21, 10);
+  //const texture1 =await updateTextureGameOfLife(context, 1, './gol2.jpg', 0, 410,410,0, 17, 17, 10);
 
   const framebuffers = [
     context.createFramebuffer(),
@@ -198,7 +300,6 @@ async function main() {
 
   function draw() {
     const previousStateIndex = 1 - nextStateIndex;
-
     context.bindFramebuffer(context.FRAMEBUFFER, framebuffers[nextStateIndex]);
     context.useProgram(stepperProg);
     context.enableVertexAttribArray(stepperProgCoordLoc);
